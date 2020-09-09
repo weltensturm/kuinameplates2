@@ -444,6 +444,7 @@ end
 -- frame sizes #################################################################
 function framesizes:Initialise()
     local frame_width = self:CreateSlider('frame_width',20,200)
+    local frame_width_healthbased = self:CreateCheckBox('frame_width_healthbased',true)
     local frame_height = self:CreateSlider('frame_height',3,40)
     local frame_width_minus = self:CreateSlider('frame_width_minus',20,200)
     local frame_height_minus = self:CreateSlider('frame_height_minus',3,40)
@@ -473,6 +474,7 @@ function framesizes:Initialise()
 
     scale_sep:SetPoint('TOP',0,-295)
     global_scale:SetPoint('TOP',0,-325)
+    frame_width_healthbased:SetPoint('TOPLEFT', 0, -360)
 end
 -- auras #######################################################################
 function auras:Initialise()

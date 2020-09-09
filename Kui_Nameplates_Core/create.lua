@@ -403,12 +403,19 @@ end
 -- frame background ############################################################
 local function UpdateFrameSize(f)
     -- set frame size and position
+    
+    local scale = 1
+    if core.profile.frame_width_healthbased then
+        print(f.state.health_max)
+        scale = Scale(math.log(1.0 + f.state.health_max / UnitHealthMax("player"))) * 2
+    end
+
     if f.state.minus then
-        f:SetSize(FRAME_WIDTH_MINUS,FRAME_HEIGHT_MINUS)
+        f:SetSize(scale*FRAME_WIDTH_MINUS,FRAME_HEIGHT_MINUS)
     elseif f.state.personal then
-        f:SetSize(FRAME_WIDTH_PERSONAL,FRAME_HEIGHT_PERSONAL)
+        f:SetSize(scale*FRAME_WIDTH_PERSONAL,FRAME_HEIGHT_PERSONAL)
     else
-        f:SetSize(FRAME_WIDTH,FRAME_HEIGHT)
+        f:SetSize(scale*FRAME_WIDTH,FRAME_HEIGHT)
     end
 
     if f.state.no_name and not f.state.personal then

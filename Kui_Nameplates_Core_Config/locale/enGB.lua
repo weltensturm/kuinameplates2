@@ -189,6 +189,7 @@ L.titles = {
     framesizes_element_sep = 'Elements',
     framesizes_scale_sep = 'Scale',
     frame_width = 'Frame width',
+    frame_width_healthbased = 'Frame width based on max health',
     frame_height = 'Frame height',
     frame_width_minus = 'Minus frame width',
     frame_height_minus = 'Minus frame height',

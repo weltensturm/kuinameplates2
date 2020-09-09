@@ -144,6 +144,7 @@ local default_config = {
     execute_colour = {1,1,1},
 
     frame_width = 132,
+    frame_width_healthbased = false,
     frame_height = 13,
     frame_width_minus = 72,
     frame_height_minus = 8,
@@ -469,6 +470,7 @@ local function configChangedFrameSize()
     QueueClickboxUpdate()
 end
 configChanged.frame_width = configChangedFrameSize
+configChanged.frame_width_healthbased = configChangedFrameSize
 configChanged.frame_height = configChangedFrameSize
 configChanged.frame_width_minus = configChangedFrameSize
 configChanged.frame_height_minus = configChangedFrameSize
