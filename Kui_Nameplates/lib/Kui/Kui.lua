@@ -550,19 +550,13 @@ kui.frameFadeOnUpdate = function(self, elapsed)
             info.fadeTimer = (info.fadeTimer and info.fadeTimer + elapsed) or 0
 
             if info.fadeTimer < info.timeToFade then
-                -- perform animation in either direction
-                if info.mode == 'IN' then
-                    frame:SetAlpha(
-                        (info.fadeTimer / info.timeToFade) *
-                        (info.endAlpha - info.startAlpha) +
-                        info.startAlpha
-                    )
-                elseif info.mode == 'OUT' then
-                    frame:SetAlpha(
-                        ((info.timeToFade - info.fadeTimer) / info.timeToFade) *
-                        (info.startAlpha - info.endAlpha) + info.endAlpha
-                    )
-                end
+                local completion = info.fadeTimer / info.timeToFade
+                local animation = completion^(self.mode == 'OUT' and 4 or 0.25)
+                frame:SetAlpha(
+                    animation *
+                    (info.endAlpha - info.startAlpha) +
+                    info.startAlpha
+                )
             else
                 -- animation has ended
                 frame:SetAlpha(info.endAlpha)
