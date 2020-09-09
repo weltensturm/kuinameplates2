@@ -406,7 +406,6 @@ local function UpdateFrameSize(f)
     
     local scale = 1
     if core.profile.frame_width_healthbased then
-        print(f.state.health_max)
         scale = Scale(math.log(1.0 + f.state.health_max / UnitHealthMax("player"))) * 2
     end
 
