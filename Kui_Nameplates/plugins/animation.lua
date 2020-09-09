@@ -29,7 +29,7 @@ do
 
                 kui.frameFade(self.KuiFader, {
                     mode = 'OUT',
-                    timeToFade = .2
+                    timeToFade = .4
                 })
             end
         end
@@ -44,7 +44,7 @@ do
     end
     local function SetStatusBarColor(self,...)
         self:orig_anim_SetStatusBarColor(...)
-        self.KuiFader:SetVertexColor(...)
+        self.KuiFader:SetVertexColor(1,1,1)
     end
     local function SetAnimationCutaway(bar)
         local fader = bar:CreateTexture(nil,'ARTWORK')
