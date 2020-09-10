@@ -551,7 +551,7 @@ kui.frameFadeOnUpdate = function(self, elapsed)
 
             if info.fadeTimer < info.timeToFade then
                 local completion = info.fadeTimer / info.timeToFade
-                local animation = completion^(self.mode == 'OUT' and 4 or 0.25)
+                local animation = completion^(info.mode == 'OUT' and 4 or 0.25)
                 frame:SetAlpha(
                     animation *
                     (info.endAlpha - info.startAlpha) +
