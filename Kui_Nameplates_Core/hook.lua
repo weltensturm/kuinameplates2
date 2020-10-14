@@ -38,6 +38,7 @@ function core:Create(f)
     self:CreateStateIcon(f)
     self:CreateRaidIcon(f)
     self:CreateNameOnlyGlow(f)
+    self:CreateQuestIcon(f)
 end
 function core:Show(f)
     -- state helpers
@@ -72,6 +73,8 @@ function core:Show(f)
     f:UpdateCastBar()
     -- set guild text
     f:UpdateGuildText()
+    -- go over the top on the comments
+    f:UpdateQuestIcon()
 
     if f.TargetArrows then
         -- show/hide target arrows
@@ -156,18 +159,16 @@ function core:Combat(f)
     -- enable/disable nameonly if enabled on enemies
     self:NameOnlyCombatUpdate(f)
 end
--- events ######################################################################
-function core:QUEST_POI_UPDATE()
-    -- update to show name of new quest NPCs
-    for _,frame in addon:Frames() do
-        if frame:IsShown() then
-            self:ShowNameUpdate(frame)
-            frame:UpdateFrameSize()
-            frame:UpdateNameText()
-            frame:UpdateLevelText()
-        end
-    end
+function core:QuestUpdate(f)
+    f:UpdateQuestIcon()
+
+    -- test name visibility on quest NPCs
+    self:ShowNameUpdate(f)
+    f:UpdateFrameSize()
+    f:UpdateNameText()
+    f:UpdateLevelText()
 end
+-- events ######################################################################
 function core:UNIT_NAME_UPDATE(_,f)
     -- update name text colour
     f:UpdateNameText()
@@ -374,12 +375,9 @@ function core:Initialise()
     self:RegisterMessage('OnEnter')
     self:RegisterMessage('OnLeave')
     self:RegisterMessage('Combat')
+    self:RegisterMessage('QuestUpdate')
 
     -- register events
-    if not kui.CLASSIC then
-        self:RegisterEvent('QUEST_POI_UPDATE')
-    end
-
     self:RegisterUnitEvent('UNIT_NAME_UPDATE')
 
     -- register callbacks

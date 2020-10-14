@@ -1,27 +1,34 @@
+ALPHA NOTES
 
-* remove old config transition helpers
+ALPHA USERS PLEASE NOTE: the alpha is currently on a separate branch from the beta and release versions; you might notice behaviour fluctuating as you get automatic updates.
 
-* fix colour pickers reset eachother
-* [classic] bump toc
+* (alpha is no longer packaged for 835)
 
-* add option to show detached castbar in name-only mode
-* add option to show level in name-only mode
-* add option to show health text percent symbol
-* add option to show blizzard class powers (implied when personal nameplate is ignored)
-* add option target_arrows_texture (not exposed in ui)
-* add get command
-* use neutral text colour on friendly neutral NPCs in name-only mode
-* use default colour picker in config (install another addon like ColorPickerPlus to get better accuracy, copy/paste, etc.)
-* move fade_avoid_casting_hostile
-* change some titles and tooltips
-* increase auras_offset soft-max
-* fix default UI experience bars aren't visible
-* fix set command help text
-* cross-compatibility with shadowlands beta
-* update KuiLib
-* update SomeoneElsesConfig-Dropdown
-* (classic) update libClassicCasterino
-* (classic) update libClassicDurations
-* (classic) remove libThreatClassic2
-* (classic) bump toc
+* increase class powers bar size
+* fix global scale does not apply to class powers bar
+* fix use_blizzard_powers is inconsistent (maybe)
+* (enable the following options by default again)
+
+* add options show_quest_icon, frame_target_size
+
+* use target glow size on threat glow, mouseover glow
+
+* add spark to healthbar
+* add frame_glow_size_target
+* increase frame glow maximum alpha
+* reduce default frame_glow_size
+* reduce frame shadow alpha slightly
+* fix mouseover glow shows on target
+
+* add frame_width_target and frame_height_target
+* use normal aura size on minus units when targeted
+* normal frames with hidden names no longer use frame_height_minus
+* fix global scale doesn't apply to class powers or boss mods when changed
+
+* (retail) fix lua error related to NamePlateDriverFrame
+
+* add a quest indicator (no options right now)
+
+* (beta) fix default nameplates become visible sometimes
+* change default frame sizes
 
