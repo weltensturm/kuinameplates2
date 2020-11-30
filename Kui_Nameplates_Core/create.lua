@@ -407,7 +407,11 @@ local function UpdateFrameSize(f)
     
     local scale = 1
     if core.profile.frame_width_healthbased then
-        scale = core:Scale(math.log(1.0 + f.state.health_max / UnitHealthMax("player"))) * 2
+        local diminish = math.max(1,  UnitLevel("player") - f.state.level - 9)
+        if f.state.level < 0 then
+            diminish = 1
+        end
+        scale = core:Scale(math.log(1.0 + f.state.health_max / UnitHealthMax("player") / diminish)) * 2
     end
 
     if f.state.minus then
