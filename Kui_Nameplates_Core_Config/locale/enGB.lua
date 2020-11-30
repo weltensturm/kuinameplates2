@@ -1,13 +1,17 @@
+-- luacheck:globals KuiNameplatesCoreConfig
 local L = KuiNameplatesCoreConfig:Locale('enGB')
 if not L then return end
 
 L.common = {
     text = 'Text',
+    size = 'Size',
     font_size = 'Font size',
+    point = 'Point',
     point_x = 'X point',
     point_y = 'Y point',
     offset_x = 'X offset',
     offset_y = 'Y offset',
+    position = 'Position',
     width = 'Width',
     height = 'Height',
     offset = 'Offset',
@@ -48,7 +52,7 @@ L.titles = {
     copy_profile_label = 'Enter name for new profile',
     reset_page_label = 'Reset all options in |cffffffff%s|r?',
     paste_page_label = 'Copy |cffffffff%s|r settings from |cffffffff%s|r to |cffffffff%s|r?',
-    version = '%s by %s @ Curse|nVersion %s',
+    version = '%s by %s at %s|nVersion %s',
 
     bar_texture = 'Bar texture',
     bar_animation = 'Bar animation',
@@ -91,7 +95,7 @@ L.titles = {
     nameonly_visibility_sep = 'Use name-only mode on...',
 
     glow_as_shadow = 'Frame shadow',
-    state_icons = 'State icons',
+    state_icons = 'Rare/boss icon',
     target_glow = 'Target glow',
     target_glow_colour = 'Target glow colour',
     mouseover_glow = 'Mouseover glow',
@@ -197,6 +201,11 @@ L.titles = {
     frame_height_personal = 'Personal frame height',
     powerbar_height = 'Power bar height',
     global_scale = 'Global scale',
+    frame_glow_size_shadow = 'Shadow size',
+    frame_glow_size_target = 'Target glow size',
+    frame_glow_size_threat = 'Threat glow size',
+    frame_padding_x = 'Clickbox padding width',
+    frame_padding_y = 'Clickbox padding height',
 
     auras_enabled = 'Show auras',
     auras_on_personal = 'Show on personal frame',
@@ -222,13 +231,13 @@ L.titles = {
     auras_purge_opposite = 'Purge on opposite',
     auras_side = 'Side',
     auras_offset = 'Vertical offset',
-    auras_cd_text_sep = 'Cooldown',
-    auras_count_text_sep = 'Count',
+    auras_cd_movable = 'Cooldown',
+    auras_count_movable = 'Count',
 
     castbar_enable = 'Enable',
     castbar_colour = 'Bar colour',
     castbar_unin_colour = 'Uninterruptible colour',
-    castbar_showpersonal = 'On personal frame',
+    castbar_showpersonal = 'On personal',
     castbar_icon = 'Spell icon',
     castbar_name = 'Spell name',
     castbar_shield = 'Uninterruptible shield',
@@ -259,6 +268,8 @@ L.titles = {
 
     classpowers_enable = 'Show class resources',
     classpowers_on_target = 'Show on target',
+    classpowers_on_friends = 'On friends',
+    classpowers_on_enemies = 'On enemies',
     classpowers_size = 'Icon size',
     classpowers_bar_width = 'Stagger bar width',
     classpowers_bar_height = 'Stagger bar height',
@@ -272,8 +283,6 @@ L.titles = {
     bossmod_x_offset = 'Horizontal offset',
     bossmod_y_offset = 'Vertical offset',
     bossmod_clickthrough = 'Enable clickthrough when automatically shown',
-    bossmod_lines = 'Allow line drawing',
-    bossmod_line_width = 'Line width',
 
     cvar_enable = 'Allow Kui Nameplates to modify CVars',
     cvar_show_friendly_npcs = 'Always show friendly NPCs\' nameplates',
@@ -291,6 +300,9 @@ L.titles = {
     cvar_disable_alpha = 'Disable fading',
     cvar_self_alpha = 'Self alpha',
     cvar_occluded_mult = 'Line-of-sight alpha',
+
+    show_quest_icon = 'Quest icon',
+    show_raid_icon = 'Raid icon',
 }
 L.tooltips = {
     reload_hint = 'Requires a UI reload.',
@@ -303,9 +315,9 @@ L.tooltips = {
 
     ignore_uiscale = 'Fix pixel alignment issues related to interface scaling. Compensate for the size difference by adjusting /knp > frame sizes > global scale.|n|nYou\'ll also need to disable the nameplate scaling CVars.|n|nThis may be necessary even if you do not have UI scale enabled.',
     use_blizzard_personal = 'Don\'t skin the personal resource display, which can be enabled in Interface > Names.',
-    state_icons = 'Show an icon on bosses and rare units (hidden when level text is shown)',
+    state_icons = '(Hidden if level text is enabled)',
 
-    clickthrough_self = 'Disable the click-box of your personal nameplate',
+    clickthrough_self = 'Disable the click-box of the personal nameplate',
     clickthrough_friend = 'Disable the click-box of friendly nameplates',
     clickthrough_enemy = 'Disable the click-box of enemy nameplates',
 
@@ -355,10 +367,9 @@ L.tooltips = {
     health_text_hostile_max = 'Health text format used on hostile units at full health',
     health_text_hostile_dmg = 'Health text format used on damaged hostile units',
 
-    frame_width_minus = 'Width for minus mobs',
-    frame_height_minus = 'Height for minus mobs and frames with a hidden name',
+    frame_minus_size = 'Alternate frame size for small mobs flagged as "minus"',
+    frame_target_size = 'Alternate frame size for the current target',
     frame_width_personal = 'Width of personal resource display (enabled in Interface > Names)',
-    frame_height_personal = 'Height of personal resource display (enabled in Interface > Names)',
     powerbar_height = 'Height of the power bar on the personal resource display',
     global_scale = 'Scale all nameplates by this amount (obeying the pixel grid)',
 
@@ -371,12 +382,15 @@ L.tooltips = {
     auras_icon_normal_size = 'Icon size on normal-size frames',
     auras_icon_minus_size = 'Icon size on smaller frames',
     auras_icon_squareness = 'Size ratio of the aura icons, where 1 means a perfect square',
+    auras_colour_short = 'Under 5 seconds',
+    auras_colour_medium = 'Under 20 seconds',
+    auras_colour_long = 'Over 20 seconds',
     auras_show_purge = 'Show buffs on enemies which you can spell steal, dispel, or purge',
     auras_cd_size = 'Set to 0 to inherit \'normal\' font size',
     auras_count_size = 'Set to 0 to inherit \'small\' font size',
 
     castbar_enable = 'Enable the cast bar element',
-    castbar_showpersonal = 'Show the cast bar on your character\'s nameplate if it is enabled',
+    castbar_showpersonal = 'Show the cast bar on the personal nameplate',
     castbar_shield = 'Show a shield icon on the cast bar during casts which cannot be interrupted',
     castbar_showall = 'Show cast bars on all nameplates, rather than on just the current target',
     castbar_showfriend = 'Show cast bars on friendly nameplates (note that cast bars are not shown on frames which have name-only mode active)',
@@ -395,24 +409,14 @@ L.tooltips = {
     tankmode_trans_colour = 'Health bar colour for enemies which are about to change targets',
     tankmode_other_colour = 'Health bar colour for enemies being tanked by another tank in your group (or a player controlled pet, vehicle or totem).|n|nThis is only used if you are currently in a tanking specialisation, and requires the other tank to be in your group and to have their group role set to tank.',
 
-    classpowers_enable = 'Show your class\' special resource, such as combo points, holy power, etc.',
-    classpowers_on_target = 'Show on the frame of your target, rather than on the personal nameplate',
-    classpowers_size = 'Size of the class powers icons',
-    classpowers_bar_width = 'Width of the stagger bar',
-    classpowers_bar_height = 'Height of the stagger bar',
-    classpowers_colour = 'Colour of the class powers icons for the current class',
-    classpowers_colour_overflow = 'Colour of class powers "overflow"',
-    classpowers_colour_inactive = 'Colour of inactive class power icons',
+    classpowers_enable = 'Show class-specific special powers, like combo points, holy power, ...',
+    classpowers_on_target = 'Show class powers on the target\'s nameplate',
 
     bossmod_enable = 'Supported boss mods can communicate with KNP to show encounter-specific auras and draw lines to nameplates.',
     bossmod_control_visibility = 'Allow boss mods to show nameplates if they are used for auras in an encounter.',
-    bossmod_icon_size = 'Size of the boss aura icons',
-    bossmod_x_offset = 'Horizontal offset of the boss aura icons',
-    bossmod_y_offset = 'Vertical offset of the boss aura icons',
     bossmod_clickthrough = 'Disable the click-box of nameplates which are automatically enabled',
-    bossmod_lines = 'Allow boss mod addons to draw lines to nameplates. Colour is determined by the boss mod.',
 
-    cvar_enable = 'When enabled, Kui Nameplates will attempt to lock the CVars on this page to the values set here.|n|nIf this option is disabled, KNP will not modify CVars, even to return them to defaults.',
+    cvar_enable = 'When enabled, Kui Nameplates will attempt to lock the CVars on this page to the values set here.',
     cvar_show_friendly_npcs = '|cffffcc00nameplateShowFriendlyNPCs|r',
     cvar_name_only = '|cffffcc00nameplateShowOnlyNames|r|n|nHide the health bar of the default nameplates in situations where friendly nameplates cannot be otherwise modified by addons.',
     cvar_personal_show_always = '|cffffcc00nameplatePersonalShowAlways|r',

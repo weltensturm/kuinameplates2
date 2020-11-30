@@ -1,34 +1,33 @@
-ALPHA NOTES
+BETA
 
-ALPHA USERS PLEASE NOTE: the alpha is currently on a separate branch from the beta and release versions; you might notice behaviour fluctuating as you get automatic updates.
+* re-pushing this, too...
 
-* (alpha is no longer packaged for 835)
+* add classpowers vertical offset option
+* add castbar_shield_size (not exposed)
+* revert remove castbar shield
+* people who read changelogs are my favourite, hmu
 
-* increase class powers bar size
-* fix global scale does not apply to class powers bar
-* fix use_blizzard_powers is inconsistent (maybe)
-* (enable the following options by default again)
+* add option bar_spark (not exposed)
+* on first run, disable frame target size on profiles with a larger normal size
 
-* add options show_quest_icon, frame_target_size
-
-* use target glow size on threat glow, mouseover glow
-
+* add quest icon
+* add option to resize the current target
+* add option to disable resizing of frames flagged as minus
+* add options for raid icon size and position
+* add options for frame clickbox padding
+* add options to show/hide class powers on friendly or hostile targets
+* add options to resize frame glow for target and threat
+* add classpowers_y,classpowers_y_nameonly,classpowers_y_personal (not exposed)
 * add spark to healthbar
-* add frame_glow_size_target
-* increase frame glow maximum alpha
-* reduce default frame_glow_size
-* reduce frame shadow alpha slightly
-* fix mouseover glow shows on target
-
-* add frame_width_target and frame_height_target
-* use normal aura size on minus units when targeted
-* normal frames with hidden names no longer use frame_height_minus
-* fix global scale doesn't apply to class powers or boss mods when changed
-
-* (retail) fix lua error related to NamePlateDriverFrame
-
-* add a quest indicator (no options right now)
-
-* (beta) fix default nameplates become visible sometimes
+* move classpowers on personal to bottom by default
+* move name text slightly
 * change default frame sizes
+* normal frames with hidden names no longer use frame_height_minus
+* update locales, add esES
+* fix combo points aren't shown in cat form
+* fix use_blizzard_powers is inconsistent (maybe)
+* correctly update level/health text position on threat change
+* remove castbar_shield
+* remove cvar_max_distance (disabled on client)
+* bump toc
 

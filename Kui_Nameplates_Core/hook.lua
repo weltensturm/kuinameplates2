@@ -8,7 +8,6 @@
 -- handle messages, events, initialise
 --------------------------------------------------------------------------------
 local addon = KuiNameplates
-local kui = LibStub('Kui-1.0')
 
 KuiNameplatesCore = addon:Layout()
 local core = KuiNameplatesCore
@@ -42,7 +41,7 @@ function core:Create(f)
 end
 function core:Show(f)
     -- state helpers
-    f.state.friend = UnitIsFriend('player',f.unit)
+    f.state.friend = f.state.reaction > 4 or UnitIsFriend('player',f.unit)
     f.state.class = select(2,UnitClass(f.unit))
     f.state.player = UnitIsPlayer(f.unit)
 
@@ -67,14 +66,14 @@ function core:Show(f)
     f:UpdateHealthText()
     -- set state icon
     f:UpdateStateIcon()
-    -- position raid icon
-    f:UpdateRaidIcon()
     -- enable/disable castbar
     f:UpdateCastBar()
     -- set guild text
     f:UpdateGuildText()
-    -- go over the top on the comments
+
     f:UpdateQuestIcon()
+
+    f:UpdateNameTextPosition()
 
     if f.TargetArrows then
         -- show/hide target arrows
@@ -91,9 +90,8 @@ function core:HealthUpdate(f)
     self:NameOnlyHealthUpdate(f)
 end
 function core:HealthColourChange(f)
-    f.state.friend = UnitIsFriend('player',f.unit)
-
-    -- update nameonly upon faction changes
+    -- faction/reaction change
+    f.state.friend = f.state.reaction > 4 or UnitIsFriend('player',f.unit)
     self:NameOnlyCombatUpdate(f)
 end
 function core:PowerTypeUpdate(f)
@@ -107,6 +105,9 @@ function core:GlowColourChange(f)
     self:ShowNameUpdate(f)
     f:UpdateFrameSize()
     f:UpdateNameText()
+    -- health and level move when name is hidden
+    f:UpdateHealthText()
+    f:UpdateLevelText()
 end
 function core:CastBarShow(f)
     f:ShowCastBar()
@@ -114,29 +115,20 @@ end
 function core:CastBarHide(f,...)
     f:HideCastBar(...)
 end
-function core:GainedTarget(f)
-    f.state.target = true
-
-    -- disable nameonly on target
+function core:TargetUpdate(f)
     self:NameOnlyUpdate(f)
-    -- show name on target
     self:ShowNameUpdate(f)
-
     f:UpdateFrameSize()
     f:UpdateLevelText()
     self:NameOnlyUpdateFunctions(f)
 end
+function core:GainedTarget(f)
+    f.state.target = true
+    self:TargetUpdate(f)
+end
 function core:LostTarget(f)
     f.state.target = nil
-
-    -- toggle nameonly depending on state
-    self:NameOnlyUpdate(f)
-    -- hide name depending on state
-    self:ShowNameUpdate(f)
-
-    f:UpdateFrameSize()
-    f:UpdateLevelText()
-    self:NameOnlyUpdateFunctions(f)
+    self:TargetUpdate(f)
 end
 function core:ClassificationChanged(f)
     f:UpdateStateIcon()
@@ -161,12 +153,6 @@ function core:Combat(f)
 end
 function core:QuestUpdate(f)
     f:UpdateQuestIcon()
-
-    -- test name visibility on quest NPCs
-    self:ShowNameUpdate(f)
-    f:UpdateFrameSize()
-    f:UpdateNameText()
-    f:UpdateLevelText()
 end
 -- events ######################################################################
 function core:UNIT_NAME_UPDATE(_,f)

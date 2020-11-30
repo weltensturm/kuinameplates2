@@ -1,12 +1,15 @@
 local opt = KuiNameplatesCoreConfig -- luacheck:globals KuiNameplatesCoreConfig
+local core = KuiNameplatesCore -- luacheck:globals KuiNameplatesCore
 local frame_name = 'KuiNameplatesCoreConfig'
-local pcdd = LibStub('SomeoneElsesConfig-Dropdown')
+local ddlib = LibStub('KuiDropdown')
+local kui = LibStub('Kui-1.0')
 local L = opt:GetLocale()
 
 local S_CHECKBOX_ON = 856
 local S_CHECKBOX_OFF = 857
 local S_MENU_OPEN = 850
 local S_MENU_CLOSE = 851
+local S_BUTTON = 1115
 
 local function GetLocaleString(common_key,name,fallback)
     if common_key and L.common[common_key] then
@@ -65,14 +68,23 @@ local function GenericOnShow(self)
 end
 -- element creation helpers ####################################################
 -- button ######################################################################
-local function CreateButton(parent)
-    local f = CreateFrame('Button',nil,parent,'UIPanelButtonTemplate')
+function opt:CreateButton(env,common_name)
+    local f = CreateFrame('Button',nil,self,'UIPanelButtonTemplate')
+    f:SetScript('OnShow',GenericOnShow)
     if f.Text and f.Left and f.Right then
         f.Text:SetPoint('LEFT',f.Left)
         f.Text:SetPoint('RIGHT',f.Right)
+        f.Text:SetText(GetLocaleString(common_name,env,'Button'))
+    end
+    if env then
+        f.env = env
+        if type(self.elements) == 'table' then
+            self.elements[env] = f
+        end
     end
     return f
 end
+local CreateButton = opt.CreateButton -- legacy alias
 -- checkbox ####################################################################
 do
     local function Get(self)
@@ -184,7 +196,7 @@ do
     end
 
     function opt.CreateDropDown(parent, name, common_name)
-        local dd = pcdd:New(parent,GetLocaleString(common_name,name,'Dropdown'))
+        local dd = ddlib:New(parent,GetLocaleString(common_name,name,'Dropdown'))
         dd.labelText:SetFontObject('GameFontNormalSmall')
         dd:SetWidth(200)
         dd:SetHeight(40)
@@ -300,7 +312,8 @@ do
     end
 
     function opt.CreateSlider(parent, name, min, max, small, common_name)
-        local slider = CreateFrame('Slider',frame_name..name..'Slider',parent,'OptionsSliderTemplate')
+        local this_name = frame_name and name and (frame_name..name..'Slider')
+        local slider = CreateFrame('Slider',this_name,parent,'OptionsSliderTemplate')
         slider:SetWidth(190)
         slider:SetHeight(15)
         slider:SetOrientation('HORIZONTAL')
@@ -309,7 +322,7 @@ do
         slider:EnableMouseWheel(true)
 
         local label = slider:CreateFontString(
-            slider:GetName()..'Label','ARTWORK',
+            this_name and this_name..'Label','ARTWORK',
             (small and 'GameFontNormalSmall' or 'GameFontNormal'))
         label:SetText(GetLocaleString(common_name,name,'Slider'))
         label:SetPoint('BOTTOM',slider,'TOP')
@@ -476,8 +489,11 @@ function opt.CreateSeparator(parent,name,common_name)
     shadow:SetPoint('BOTTOMRIGHT',line,'TOPRIGHT')
 
     local label = parent:CreateFontString(nil,'ARTWORK','GameFontNormal')
-    label:SetText(GetLocaleString(common_name,name,'Separator'))
     label:SetPoint('CENTER',line,0,10)
+
+    if name or common_name then
+        label:SetText(GetLocaleString(common_name,name,'Separator'))
+    end
 
     line.label = label
     line.shadow = shadow
@@ -502,6 +518,7 @@ do
         CreateSlider = opt.CreateSlider,
         CreateColourPicker = opt.CreateColourPicker,
         CreateSeparator = opt.CreateSeparator,
+        CreateButton = opt.CreateButton,
     }
     local function BindPage(pg)
         for k,v in pairs(page_proto) do
@@ -611,7 +628,7 @@ do
         self:SetValue(opt.config.csv.profile)
     end
     function CreateProfileDropDown(parent)
-        local p_dd = pcdd:New(parent)
+        local p_dd = ddlib:New(parent)
         p_dd.list_width = 175
         p_dd.labelText:SetFontObject('GameFontNormalSmall')
         p_dd:SetFrameStrata('TOOLTIP')
@@ -666,24 +683,25 @@ do
         end
 
         if self.pages[page_name] then
-            self.pages[page_name]:Show()
-            self.active_page = self.pages[page_name]
-
-            if self.active_page.size then
-                self:SetSize(unpack(self.active_page.size))
-            else
-                self:SetSize(400,150)
+            local pg = self.pages[page_name]
+            if type(pg.PreShow) == 'function' then
+                pg:PreShow(...)
             end
 
-            if type(self.active_page.PostShow) == 'function' then
-                self.active_page:PostShow(...)
+            pg:Show()
+            self.active_page = pg
+
+            if pg.size then
+                self:SetSize(unpack(pg.size))
+            else
+                self:SetSize(400,150)
             end
         end
 
         self:Show()
     end
     -- confirm dialog ##########################################################
-    local function ConfirmDialog_PostShow(self,desc,callback)
+    local function ConfirmDialog_PreShow(self,desc,callback)
         self.label:SetText('')
         self.callback = nil
 
@@ -702,14 +720,14 @@ do
         label:SetPoint('RIGHT',-40,0)
 
         pg.label = label
-        pg.PostShow = ConfirmDialog_PostShow
+        pg.PreShow = ConfirmDialog_PreShow
     end
 
     -- text-entry dialog (rename, copy, new) ###################################
     local function TextEntry_OnShow(self)
         self.editbox:SetFocus()
     end
-    local function TextEntry_PostShow(self,desc,default,callback)
+    local function TextEntry_PreShow(self,desc,default,callback)
         self.callback = nil
         self.label:SetText('')
         self.editbox:SetText('')
@@ -740,11 +758,152 @@ do
 
         pg.label = label
         pg.editbox = text
-        pg.PostShow = TextEntry_PostShow
+        pg.PreShow = TextEntry_PreShow
 
         pg:SetScript('OnShow',TextEntry_OnShow)
         text:SetScript('OnEnterPressed',TextEntry_OnEnterPressed)
         text:SetScript('OnEscapePressed',TextEntry_OnEscapePressed)
+    end
+
+    -- simple movable (size/point) ########################################
+    local function Movable_PointDropdown_Button_OnClick(self)
+        local dropdown = self:GetParent():GetParent()
+        dropdown.selected = self.value
+        dropdown.valueText:SetText(self.text)
+        dropdown.list:Hide()
+
+        local callback = dropdown.OnValueChanged or dropdown.callback
+        if callback then
+            callback(dropdown,self.value,self.text)
+        end
+        PlaySound(S_BUTTON)
+    end
+    local function Movable_PointDropdown_UpdateList(self)
+        local selected = self:GetParent().selected
+        if not selected then return end
+        for _,button in ipairs(self.buttons) do
+            if button.value == selected then
+                button.icon:SetVertexColor(.6,.5,0)
+            else
+                button.icon:SetVertexColor(.2,.2,.2)
+            end
+        end
+    end
+    local function Movable_PointDropdown_CreateList(self)
+        local list = CreateFrame('Button',nil,self,BackdropTemplateMixin and 'BackdropTemplate' or nil)
+        list:SetBackdrop({
+            bgFile = 'interface/buttons/white8x8',
+            edgeFile = 'interface/dialogframe/ui-dialogbox-border',
+            insets = { left = 11, right = 12, top = 12, bottom = 11 },
+            tile = true, tileSize = 32, edgeSize = 32,
+        })
+        list:SetBackdropColor(0,0,0,.85)
+        list:SetPoint('TOP',self,'BOTTOM',0,3)
+        list:SetSize(129,85)
+        list:SetFrameStrata('DIALOG')
+        list:SetToplevel(true)
+        list:Hide()
+        list.buttons = {}
+
+        local pb,pc
+        for i=1,9 do
+            local button = CreateFrame('Button',nil,list)
+            button:SetSize(32,18)
+            button.value = i
+            button.text = core.POINT_ASSOC[i]
+
+            local icon = button:CreateTexture(nil,'BORDER')
+            icon:SetTexture('interface/buttons/white8x8')
+            icon:SetAllPoints(button)
+            button.icon = icon
+
+            local hl = button:CreateTexture(nil,'HIGHLIGHT')
+            hl:SetTexture('interface/buttons/white8x8')
+            hl:SetAllPoints(button)
+            hl:SetAlpha(.5)
+            button.hl = hl
+
+            button:SetHighlightTexture(hl)
+            button:SetScript('OnClick',Movable_PointDropdown_Button_OnClick)
+
+            if pb then
+                if pc and i%3 == 1 then
+                    button:SetPoint('TOPLEFT',pc,'TOPRIGHT',3,0)
+                else
+                    button:SetPoint('TOPLEFT',pb,'BOTTOMLEFT',0,-3)
+                end
+            else
+                button:SetPoint('TOPLEFT',13,-13)
+            end
+
+            pb = button
+            if i%3 == 1 then pc = button end
+
+            tinsert(list.buttons,button)
+        end
+
+        list:SetScript('OnShow',Movable_PointDropdown_UpdateList)
+        return list
+    end
+    local function Movable_PreShow(self,prefix,button_env,keys,minmax)
+        if self.header then
+            self.header.Text:SetText(GetLocaleString(nil,button_env))
+        end
+        self.cancel = {}
+
+        for k,ele in pairs(self.elements) do
+            local env = keys and keys[k] or prefix..'_'..k
+            ele.env = env
+            self.cancel[env] = opt.profile[env]
+
+            if ele.SetMinMaxValues then
+                ele:SetMinMaxValues(unpack(minmax and minmax[k] or self.minmax[k]))
+            end
+        end
+    end
+    local function Movable_Callback(self,okay)
+        if okay then return end
+        for env,val in pairs(self.cancel) do
+            opt.config:SetKey(env,val)
+        end
+    end
+    local function CreatePopupPage_Movable()
+        local pg = opt:CreatePopupPage('movable')
+        pg.callback = Movable_Callback
+        pg.size = {400,190}
+        pg.minmax = {
+            size = {1,100},
+            x = {-50,50},
+            y = {-50,50},
+        }
+
+        if not kui.CLASSIC then
+            -- XXX #507 DialogHeaderTemplate doesn't exist on classic as of 902
+            local header = CreateFrame('Frame',nil,pg,'DialogHeaderTemplate')
+            header:SetPoint('CENTER',pg,'TOP')
+            pg.header = header
+        end
+
+        local size = opt.CreateSlider(pg,nil,0,100,nil,'size')
+        size:SetPoint('TOP',-85,-50)
+        size:SetWidth(150)
+
+        local point = opt.CreateDropDown(pg,nil,'point')
+        point.SelectTable = core.POINT_ASSOC
+        point:SetPoint('TOP',85,-40)
+        point:SetWidth(150)
+        point.CreateListOverride = Movable_PointDropdown_CreateList
+
+        local x = opt.CreateSlider(pg,nil,-100,100,nil,'offset_x')
+        x:SetPoint('TOP',-85,-100)
+        x:SetWidth(150)
+
+        local y = opt.CreateSlider(pg,nil,-100,100,nil,'offset_y')
+        y:SetPoint('TOP',85,-100)
+        y:SetWidth(150)
+
+        pg.elements = { size = size, point = point, x = x, y = y }
+        pg.PreShow = Movable_PreShow
     end
 
     -- create popup ############################################################
@@ -794,6 +953,7 @@ do
         -- create required pages
         CreatePopupPage_ConfirmDialog()
         CreatePopupPage_TextEntry()
+        CreatePopupPage_Movable()
 
         opt:HookScript('OnHide',function(self)
             self.Popup:Hide()
@@ -863,9 +1023,8 @@ do
         if not self:CurrentPage_CanPaste() then return end
 
         for env,value in pairs(clipboard) do
-            self.config.profile[env] = value
+            self.config:SetKey(env,value)
         end
-        self.config:PostProfile()
 
         clipboard,clipboard_page,clipboard_profile = nil,nil,nil
         self:CurrentPage_UpdateClipboardButton()
@@ -881,12 +1040,10 @@ do
     function opt:CurrentPage_Reset()
         -- reset settings on current page
         for _,e_frame in pairs(self.active_page.elements) do
-            local env = e_frame.env
-            if env then
-                self.config.profile[env] = nil
+            if e_frame.env then
+                self.config:ResetKey(e_frame.env)
             end
         end
-        self.config:PostProfile()
     end
     function opt:CurrentPage_ClipboardButtonClick(button)
         if button == 'RightButton' or not self:CurrentPage_CanPaste() then
@@ -1123,7 +1280,7 @@ function opt:Initialise()
     version:SetPoint('BOTTOMRIGHT',self,'TOPRIGHT',-10,4)
     version:SetText(format(
         L.titles.version,
-        'Kui Nameplates','Kesava','@project-version@'
+        'Kui Nameplates','Kesavaa','Twitch','@project-version@'
     ))
 
     self.TabList = tablist

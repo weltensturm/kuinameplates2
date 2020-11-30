@@ -1,4 +1,4 @@
-local L = KuiNameplatesCoreConfig:Locale('esMX')
+local L = KuiNameplatesCoreConfig:Locale('esES')
 if not L then return end
 
 L["common"] = {
