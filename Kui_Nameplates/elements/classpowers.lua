@@ -105,17 +105,11 @@ local BAR_TEXTURE,BAR_WIDTH,BAR_HEIGHT
 local FRAME_POINT
 local ICON_SPRITE
 
-local BALANCE_FERAL_AFFINITY_TALENT_ID=22155
-local GUARDIAN_FERAL_AFFINITY_TALENT_ID=22156
-local RESTO_FERAL_AFFINITY_TALENT_ID=22367
 local FIRES_OF_JUSTICE_SPELL_ID=209785
 -- local functions #############################################################
 local function AuraUtil_IDPredicate(IDToFind,_,_,_,_,_,_,_,_,_,_,_,spellID)
     -- spell ID predicate for AuraUtil
     return spellID == IDToFind
-end
-local function IsTalentKnown(id)
-    return select(10,GetTalentInfoByID(id))
 end
 local function PositionIcons()
     -- position icons in the powers container frame
@@ -226,7 +220,7 @@ local function CreateBar()
     local bar = ele:RunCallback('CreateBar')
 
     if not bar then
-        bar = CreateFrame('StatusBar',nil,cpf)
+        bar = CreateFrame('StatusBar',nil,cpf,BackdropTemplateMixin and 'BackdropTemplate' or nil)
         bar:SetStatusBarTexture(BAR_TEXTURE)
         bar:SetSize(BAR_WIDTH,BAR_HEIGHT)
 
@@ -396,15 +390,7 @@ local function PositionFrame()
 
     local frame
     if on_target then
-        if UnitIsPlayer('target') or UnitCanAttack('player','target') then
-            frame = addon:GetActiveNameplateForUnit('target')
-            if  not frame or
-                not frame.state.reaction or
-                frame.state.reaction > 4
-            then
-                frame = nil
-            end
-        end
+        frame = addon:GetActiveNameplateForUnit('target')
     else
         frame = addon:GetActiveNameplateForUnit('player')
     end
@@ -565,14 +551,8 @@ function ele:PowerInit()
                 cpf:RegisterUnitEvent('UNIT_AURA','player')
                 self.UNIT_AURA_func = self.Paladin_WatchFiresOfJustice
             end
-        elseif class == 'DRUID' and (
-           (spec == 1 and IsTalentKnown(BALANCE_FERAL_AFFINITY_TALENT_ID)) or
-           (spec == 3 and IsTalentKnown(GUARDIAN_FERAL_AFFINITY_TALENT_ID)) or
-           (spec == 4 and IsTalentKnown(RESTO_FERAL_AFFINITY_TALENT_ID))
-           )
-        then
-            -- if feral affinity is known, we need to watch for shapeshifts
-            -- into cat form
+        elseif class == 'DRUID' then
+            -- watch for shapeshifts into cat form
             self:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 
             local form = GetShapeshiftForm()
@@ -818,7 +798,7 @@ function ele:Initialise()
         powers = {
             DEATHKNIGHT = Enum.PowerType.Runes,
             DRUID       = { [2] = Enum.PowerType.ComboPoints },
-            PALADIN     = { [3] = Enum.PowerType.HolyPower },
+            PALADIN     = Enum.PowerType.HolyPower,
             ROGUE       = Enum.PowerType.ComboPoints,
             MAGE        = { [1] = Enum.PowerType.ArcaneCharges },
             MONK        = { [1] = 'stagger', [3] = Enum.PowerType.Chi },
