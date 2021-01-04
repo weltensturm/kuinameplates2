@@ -385,11 +385,14 @@ local function UpdateFrameSize(f)
     
     local scale = 1
     if core.profile.frame_width_healthbased then
-        local diminish = math.max(1,  UnitLevel("player") - f.state.level - 9)
-        if f.state.level < 0 or UnitIsPlayer(f.unit) then
+        local diminish = math.max(1,  UnitEffectiveLevel("player") - f.state.level - 9)
+        diminish = diminish + (math.max(1, GetNumGroupMembers()) - 1)
+        if f.state.level < 0 or UnitIsPlayer(f.unit) or UnitIsPVP(f.unit) then
             diminish = 1
         end
-        scale = core:Scale(math.log(1.0 + f.state.health_max / UnitHealthMax("player") / diminish)) * 2
+        --scale = core:Scale(math.log10(1.0 + f.state.health_max / UnitHealthMax("player") / diminish)) * 5
+        local x = f.state.health_max / UnitHealthMax("player") / diminish / 2
+        scale = core:Scale(1 - 1 / (x + 1)) * 4
     end
 
     if f.state.minus then
