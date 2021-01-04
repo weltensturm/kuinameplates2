@@ -86,7 +86,7 @@ function core:Hide(f)
 end
 function core:HealthUpdate(f)
     f:UpdateHealthText()
-
+    f:UpdateFrameSize()
     self:NameOnlyHealthUpdate(f)
 end
 function core:HealthColourChange(f)
