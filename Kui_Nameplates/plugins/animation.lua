@@ -10,50 +10,54 @@ local GetFramerate = GetFramerate
 -- local functions #############################################################
 -- cutaway #####################################################################
 do
-    local function SetValueCutaway(self,value)
-        if not self:IsVisible() then
-            -- passthrough initial calls
-            self:orig_anim_SetValue(value)
-            return
-        end
+    local tick_frame, smoothing, num_smoothing = nil,{},0
 
-        if value < self:GetValue() then
-            if not kui.frameIsFading(self.KuiFader) then
-                self.KuiFader:SetPoint(
-                    'RIGHT', self, 'LEFT',
-                    (self:GetValue() / select(2,self:GetMinMaxValues())) * self:GetWidth(), 0
-                )
-
-                -- store original rightmost value
-                self.KuiFader.right = self:GetValue()
-
-                kui.frameFade(self.KuiFader, {
-                    mode = 'OUT',
-                    timeToFade = .4
-                })
+    local function Tick()
+        local limit = 30/GetFramerate()
+        for bar, _ in pairs(smoothing) do
+            bar.KuiFader.speed = (bar.KuiFader.speed or 0) + limit*4
+            bar.KuiFader.width = bar.KuiFader.width or 0
+            bar.KuiFader.width = math.max(0, bar.KuiFader.width - select(2, bar:GetMinMaxValues())*limit/1000.0*bar.KuiFader.speed)
+            if bar.KuiFader.width < 0.5 then
+                bar.KuiFader.speed = 0
             end
+            bar.KuiFader:SetPoint(
+                'RIGHT', bar, 'LEFT',
+                ((bar:GetValue() + bar.KuiFader.width) / select(2, bar:GetMinMaxValues())) * bar:GetWidth(), 0
+            )
         end
+    end
 
-        if self.KuiFader.right and value > self.KuiFader.right then
-            -- stop animation if new value overlaps old end point
-            kui.frameFadeRemoveFrame(self.KuiFader)
-            self.KuiFader:SetAlpha(0)
+    local function SetValueCutaway(self, value)
+        if not self.KuiFader.width then
+            self.KuiFader.width = 0
+        else
+            self.KuiFader.width = self.KuiFader.width + (self:GetValue() - value)
+            tick_frame:Show()
+            self.KuiFader:Show()
         end
-
         self:orig_anim_SetValue(value)
     end
+
     local function SetStatusBarColor(self,...)
         self:orig_anim_SetStatusBarColor(...)
         self.KuiFader:SetVertexColor(1,1,1)
     end
+
     local function SetAnimationCutaway(bar)
+        if not tick_frame then
+            tick_frame = CreateFrame('Frame')
+            tick_frame:SetScript('OnUpdate', Tick)
+        end
+
         local fader = bar:CreateTexture(nil,'ARTWORK')
         fader:SetTexture('interface/buttons/white8x8')
-        fader:SetAlpha(0)
 
         fader:SetPoint('TOP')
         fader:SetPoint('BOTTOM')
         fader:SetPoint('LEFT',bar:GetStatusBarTexture(),'RIGHT')
+
+        smoothing[bar] = true
 
         bar.orig_anim_SetValue = bar.SetValue
         bar.SetValue = SetValueCutaway
@@ -63,11 +67,12 @@ do
 
         bar.KuiFader = fader
     end
+
     local function ClearAnimationCutaway(bar)
         if not bar.KuiFader then return end
-        kui.frameFadeRemoveFrame(bar.KuiFader)
-        bar.KuiFader:SetAlpha(0)
+        bar.KuiFader.width = 0
     end
+
     local function DisableAnimationCutaway(bar)
         ClearAnimationCutaway(bar)
 
@@ -77,8 +82,10 @@ do
         bar.SetStatusBarColor = bar.orig_anim_SetStatusBarColor
         bar.orig_anim_SetStatusBarColor = nil
 
+        smoothing[bar] = nil
         bar.KuiFader = nil
     end
+
     anims['cutaway'] = {
         set   = SetAnimationCutaway,
         clear = ClearAnimationCutaway,
